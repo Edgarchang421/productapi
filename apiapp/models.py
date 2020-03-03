@@ -13,7 +13,7 @@ class Product(models.Model):
 	category = models.ForeignKey(Category , on_delete = models.CASCADE) #分類
 	name = models.CharField(max_length = 50) #產品名稱
 	description = models.TextField(default = '尚未有產品說明') #產品敘述
-	image = models.ImageField(upload_to = 'media' , blank = True) #圖片
+	image = models.ImageField(upload_to = 'media' , blank = True) #圖片，若資料夾中已經有相同名稱的檔案，storage system會修改為unique的名稱
 	stock = models.PositiveIntegerField(default = 0) #庫存
 	price = models.PositiveIntegerField(default = 0) #價錢
 	owner = models.ForeignKey(User , on_delete=models.CASCADE , related_name='products')
