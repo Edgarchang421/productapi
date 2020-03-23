@@ -339,3 +339,8 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 			} )
 		
 		self.assertEqual(response.status_code , 401)
+	
+	def test_AnonymousUser_delete(self): #測試未驗證的user使用delete method
+		response = self.client.delete('/apis/product/1/')
+		
+		self.assertEqual(response.status_code , 401)
