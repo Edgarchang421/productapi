@@ -398,3 +398,13 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 				'owner': 'jacob'
 			}
 		)
+	
+	def test_AuthenticatedUser_delete(self): #測試已驗證的user使用delete method
+		JWT = self.get_JSON_Web_Token()
+		
+		##建立有Authorization: Bearer + access token的header的Client() instance，完成post method
+		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
+		response = c.delete('/apis/product/1/')
+		
+		self.assertEqual(response.status_code , 204)
+		self.assertEqual(response.data , None )
