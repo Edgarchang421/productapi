@@ -70,7 +70,6 @@ class CategoriesListTest(TestCase): #測試CategoryList的GET和POST，分為匿
 		
 class CategoryDetailTest(TestCase):  #測試CategoryDetail的GET、PUT和DELET，分為匿名user和已驗證過的user。
 	
-	
 	def setUp(self):
 		#建立test database，然後新增一個普通user、一個category的instance
 		self.user = User.objects.create_user(username='jacob',  password='top1secret23')
@@ -118,7 +117,7 @@ class CategoryDetailTest(TestCase):  #測試CategoryDetail的GET、PUT和DELET�
 		
 		##建立有Authorization: Bearer + access token的header的Client() instance，完成post method
 		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
-		response = c.put('/apis/category/1/' , {'name':'monitor'}, content_type='application/json')
+		response = c.put('/apis/category/1/' , {'name':'monitor'} , content_type='application/json')
 		
 		self.assertEqual(response.status_code , 200)
 		self.assertEqual(response.data , {'id': 1, 'name': 'monitor'} )
@@ -290,7 +289,8 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 		bookcategory = Category.objects.get(name = 'book')
 		productowner = User.objects.get(username = 'jacob')
 		
-		Product.objects.create(category = bookcategory ,
+		Product.objects.create(
+			category = bookcategory ,
 			name = '科班出身的MVC網頁開發：使用Python+Django' , 
 			description = '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
 			#image = '/home/edgar/productapi/media/media/2013120517752b.jpg', 
@@ -298,6 +298,7 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 			price = 550 , 
 			owner = productowner
 			)
+	
 	def get_JSON_Web_Token(self):
 		##由於POST、PUT、DELETE method需要使用JWT驗證，故建立此method，方便重複使用
 		obtaintJsonWebToken = self.client.post('/api/token/' , 
@@ -326,7 +327,7 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 		)
 		
 	def test_AnonymousUser_put(self): #測試未驗證的user使用put method
-		response = self.client.put('/apis/category/1/' , 
+		response = self.client.put('/apis/product/1/' , 
 			{
 				'id': 1,
 				'category': 1,
@@ -336,7 +337,8 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 				'stock': 10,
 				'price': 550,
 				'owner': 'jacob'
-			} )
+			}
+		)
 		
 		self.assertEqual(response.status_code , 401)
 	
@@ -364,4 +366,35 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 				'price': 550,
 				'owner': 'jacob'
 			} 
+		)
+		
+	def test_AuthenticatedUser_put(self): #測試已驗證的user使用get method
+		JWT = self.get_JSON_Web_Token()
+		
+		##建立有Authorization: Bearer + access token的header的Client() instance
+		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
+		response = c.put('/apis/product/1/' , 
+			{
+				'category': 1,
+				'name': '科班出身的MVC網頁開發：使用Python+Django',
+				'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成，put http method test。',
+				#'image': None ,
+				'stock': 10,
+				'price': 550
+			}
+			,content_type='application/json'
+		)
+		
+		self.assertEqual(response.status_code , 200)
+		self.assertEqual(response.data , 
+			{
+				'id': 1,
+				'category': 1,
+				'name': '科班出身的MVC網頁開發：使用Python+Django',
+				'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成，put http method test。',
+				'image': None ,
+				'stock': 10,
+				'price': 550,
+				'owner': 'jacob'
+			}
 		)
