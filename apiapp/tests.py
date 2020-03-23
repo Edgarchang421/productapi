@@ -1,8 +1,11 @@
 from django.test import TestCase , Client
 from django.contrib.auth.models import AnonymousUser, User
+from django.core.files import File
 
 from .views import CategoryList
 from .models import Category , Product
+
+from io import BytesIO
 
 class CategoriesListTest(TestCase): #測試CategoriesList的GET和POST，分為匿名user和已驗證過的user。
 	##建立categoet的資料，方便AssertEqual時重複使用
@@ -144,7 +147,7 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 		Product.objects.create(category = bookcategory ,
 			name = '科班出身的MVC網頁開發：使用Python+Django' , 
 			description = '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
-			#image = '/home/edgar/productapi/media/media/2013120517752b.jpg' , 
+			#image = '/home/edgar/productapi/media/media/2013120517752b.jpg', 
 			stock = 10 , 
 			price = 550 , 
 			owner = productowner
@@ -180,7 +183,7 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 					'category': 1,
 					'name': '科班出身的MVC網頁開發：使用Python+Django',
 					'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
-					'image': None , #'http://testserver/media/media/2013120517752b.jpg',
+					'image': None ,
 					'stock': 10,
 					'price': 550,
 					'owner': 'jacob'
@@ -190,7 +193,40 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 					'category': 1,
 					'name' : 'Python Web介面開發與自動化測試' , 
 					'description' : '本書從Web介面開發講起，理解介面是如何開發後，再學習介面測試自然就變得非常簡單。',
-					'image': None , #'http://testserver/media/media/1.jpg',
+					'image': None ,
+					'stock': 5,
+					'price': 450,
+					'owner': 'jacob'
+				}
+			]
+		)
+		
+	def test_AuthenticatedUser_get(self): #測試已驗證的user使用get method
+		JWT = self.get_JSON_Web_Token()
+		
+		##建立有Authorization: Bearer + access token的header的Client() instance，完成post method
+		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
+		response = c.get('/apis/products/')
+		
+		self.assertEqual(response.status_code , 200)
+		self.assertEqual(response.data , 
+			[
+				{
+					'id': 1,
+					'category': 1,
+					'name': '科班出身的MVC網頁開發：使用Python+Django',
+					'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
+					'image': None ,
+					'stock': 10,
+					'price': 550,
+					'owner': 'jacob'
+				},
+				{
+					'id': 2,
+					'category': 1,
+					'name' : 'Python Web介面開發與自動化測試' , 
+					'description' : '本書從Web介面開發講起，理解介面是如何開發後，再學習介面測試自然就變得非常簡單。',
+					'image': None ,
 					'stock': 5,
 					'price': 450,
 					'owner': 'jacob'
@@ -212,7 +248,7 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 		
 		self.assertEqual(response.status_code , 401)
 		
-	def test_AuthenticatedUser_post(self): #測試未驗證的user使用post method
+	def test_AuthenticatedUser_post(self): #測試已驗證的user使用post method
 		JWT = self.get_JSON_Web_Token()
 		
 		##建立有Authorization: Bearer + access token的header的Client() instance，完成post method
