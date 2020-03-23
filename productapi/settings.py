@@ -45,7 +45,9 @@ REST_FRAMEWORK = {
 	#設定驗證方法，若沒有設定DEFAULT_AUTHENTICATION_CLASSES，會將request.user設定為instance of django.contrib.auth.models.AnonymousUser
 	'DEFAULT_AUTHENTICATION_CLASSES': (
 		'rest_framework_simplejwt.authentication.JWTAuthentication',
-	)
+	),
+	#設定test時，發出request的format
+	'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 	}
 
 MIDDLEWARE = [

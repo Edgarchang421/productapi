@@ -8,8 +8,6 @@ from rest_framework import permissions
 
 from django.contrib.auth.models import User
 
-
-
 class UserList(mixins.ListModelMixin,
 				mixins.CreateModelMixin,
 				generics.GenericAPIView):
@@ -86,7 +84,7 @@ class ProductList(mixins.ListModelMixin,
 		"""
 		透過override get_queryset() 完成filter的功能
 		使用可以使用查詢參數category、username對product進行filter
-		example : http://192.168.1.111:8000/products/?category=book&username=edgar
+		example : /products/?category=book&username=edgar
 		"""
 		queryset = Product.objects.all()
 		category = self.request.query_params.get('category' , None)
