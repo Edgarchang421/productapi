@@ -344,3 +344,24 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 		response = self.client.delete('/apis/product/1/')
 		
 		self.assertEqual(response.status_code , 401)
+		
+	def test_AuthenticatedUser_get(self): #測試已驗證的user使用get method
+		JWT = self.get_JSON_Web_Token()
+		
+		##建立有Authorization: Bearer + access token的header的Client() instance，完成post method
+		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
+		response = c.get('/apis/product/1/')
+		
+		self.assertEqual(response.status_code , 200)
+		self.assertEqual(response.data , 
+			{
+				'id': 1,
+				'category': 1,
+				'name': '科班出身的MVC網頁開發：使用Python+Django',
+				'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
+				'image': None ,
+				'stock': 10,
+				'price': 550,
+				'owner': 'jacob'
+			} 
+		)
