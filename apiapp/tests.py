@@ -7,7 +7,7 @@ from .models import Category , Product
 
 from io import BytesIO
 
-class CategoriesListTest(TestCase): #測試CategoriesList的GET和POST，分為匿名user和已驗證過的user。
+class CategoriesListTest(TestCase): #測試CategoryList的GET和POST，分為匿名user和已驗證過的user。
 	##建立categoet的資料，方便AssertEqual時重複使用
 	category_list_data = [
 				{
@@ -277,4 +277,50 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 				'price': 72800,
 				'owner': 'jacob'
 			}
+		)
+
+class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，分為匿名user和已驗證過的user。
+	def setUp(self):
+		#建立test database，然後新增一個普通user、一個Category的instance、兩個Product的instance
+		self.user = User.objects.create_user(username='jacob',  password='top1secret23')
+		
+		Category.objects.create(name = 'book')
+		Category.objects.create(name = 'guitar')
+		
+		bookcategory = Category.objects.get(name = 'book')
+		productowner = User.objects.get(username = 'jacob')
+		
+		Product.objects.create(category = bookcategory ,
+			name = '科班出身的MVC網頁開發：使用Python+Django' , 
+			description = '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
+			#image = '/home/edgar/productapi/media/media/2013120517752b.jpg', 
+			stock = 10 , 
+			price = 550 , 
+			owner = productowner
+			)
+	def get_JSON_Web_Token(self):
+		##由於POST、PUT、DELETE method需要使用JWT驗證，故建立此method，方便重複使用
+		obtaintJsonWebToken = self.client.post('/api/token/' , 
+			{'username':'jacob' , 'password':'top1secret23'} , 
+			content_type='application/json'
+			)
+		JWT = obtaintJsonWebToken.data
+		
+		return JWT
+		
+	def test_AnonymousUser_get(self): #測試未驗證的user使用get method
+		response = self.client.get('/apis/product/1/')
+		
+		self.assertEqual(response.status_code , 200)
+		self.assertEqual(response.data , 
+			{
+				'id': 1,
+				'category': 1,
+				'name': '科班出身的MVC網頁開發：使用Python+Django',
+				'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
+				'image': None ,
+				'stock': 10,
+				'price': 550,
+				'owner': 'jacob'
+			} 
 		)
