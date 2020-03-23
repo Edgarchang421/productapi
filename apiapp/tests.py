@@ -324,3 +324,18 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 				'owner': 'jacob'
 			} 
 		)
+		
+	def test_AnonymousUser_put(self): #測試未驗證的user使用put method
+		response = self.client.put('/apis/category/1/' , 
+			{
+				'id': 1,
+				'category': 1,
+				'name': '科班出身的MVC網頁開發：使用Python+Django',
+				'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成，put http method test。',
+				'image': None ,
+				'stock': 10,
+				'price': 550,
+				'owner': 'jacob'
+			} )
+		
+		self.assertEqual(response.status_code , 401)
