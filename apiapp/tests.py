@@ -5,20 +5,8 @@ from .views import CategoryList
 from .models import Category , Product
 
 class CategoriesListTest(TestCase): #測試CategoriesList的GET和POST，分為匿名user和已驗證過的user。
-	def setUp(self):
-		#建立test database，然後新增一個普通user、兩個category的instance
-		self.regularuser = User.objects.create_user(username='jacob',  password='top1secret23')
-		
-		Category.objects.create(name = 'book')
-		Category.objects.create(name = 'guitar')
-
-	def test_AnonymousUser_get(self): #測試未驗證的user使用get method
-		c = Client()
-		response = c.get('/apis/categories/')
-		
-		self.assertEqual(response.status_code , 200)
-		self.assertEqual(response.data , 
-			[
+	##建立categoet的資料，方便AssertEqual時重複使用
+	category_list_data = [
 				{
 					'id': 1, 
 					'name': 'book'
@@ -28,38 +16,47 @@ class CategoriesListTest(TestCase): #測試CategoriesList的GET和POST，分為�
 					'name': 'guitar'
 				}
 			]
-		)
+	
+	def setUp(self):
+		#建立test database，然後新增一個普通user、兩個category的instance
+		self.regularuser = User.objects.create_user(username='jacob',  password='top1secret23')
 		
-	def test_AuthenticatedUser_get(self): #測試已驗證的user使用get method
-		##先獲得JsonWebToken
-		c = Client()
-		obtaintJsonWebToken = c.post('/api/token/' , 
+		Category.objects.create(name = 'book')
+		Category.objects.create(name = 'guitar')
+
+	def get_JSON_Web_Token(self):
+		##由於POST method需要使用JWT驗證，故建立此method，方便重複使用
+		obtaintJsonWebToken = self.client.post('/api/token/' , 
 			{'username':'jacob' , 'password':'top1secret23'} , 
 			content_type='application/json'
 			)
 		JWT = obtaintJsonWebToken.data
+		
+		return JWT
+
+	def test_AnonymousUser_get(self): #測試未驗證的user使用get method
+		response = self.client.get('/apis/categories/')
+		
+		self.assertEqual(response.status_code , 200)
+		self.assertEqual(response.data , self.category_list_data)
+		
+	def test_AuthenticatedUser_get(self): #測試已驗證的user使用get method
+		JWT = self.get_JSON_Web_Token()
 		
 		##建立有Authorization: Bearer + access token的header的Client() instance
 		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
 		response = c.get('/apis/categories/')
 		
 		self.assertEqual(response.status_code , 200)
-		self.assertEqual(response.data, [{'id': 1, 'name': 'book'},{'id': 2, 'name': 'guitar'}])
+		self.assertEqual(response.data, self.category_list_data)
 	
 	def test_AnonymousUser_post(self): #測試未驗證的user使用post method
-		c = Client()
-		response = c.post('/apis/categories/' , {'name':'CD'})
+		response = self.client.post('/apis/categories/' , {'name':'CD'})
 		
 		self.assertEqual(response.status_code , 401)
 		
 	def test_AuthenticatedUser_post(self): #測試已驗證的user使用post method
-		##先獲得JsonWebToken
-		c = Client()
-		obtaintJsonWebToken = c.post('/api/token/' , 
-			{'username':'jacob' , 'password':'top1secret23'} , 
-			content_type='application/json'
-			)
-		JWT = obtaintJsonWebToken.data
+		JWT = self.get_JSON_Web_Token()
 		
 		##建立有Authorization: Bearer + access token的header的Client() instance，完成post method
 		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
@@ -69,39 +66,42 @@ class CategoriesListTest(TestCase): #測試CategoriesList的GET和POST，分為�
 		self.assertEqual(response.data , {'id': 3 , 'name':'CD'} )
 		
 class CategoryDetailTest(TestCase):  #測試CategoryDetail的GET、PUT和DELET，分為匿名user和已驗證過的user。
+	
+	
 	def setUp(self):
 		#建立test database，然後新增一個普通user、一個category的instance
 		self.user = User.objects.create_user(username='jacob',  password='top1secret23')
 		
 		Category.objects.create(name = 'book')
+	
+	def get_JSON_Web_Token(self):
+		##由於POST、PUT、DELETE method需要使用JWT驗證，故建立此method，方便重複使用
+		obtaintJsonWebToken = self.client.post('/api/token/' , 
+			{'username':'jacob' , 'password':'top1secret23'} , 
+			content_type='application/json'
+			)
+		JWT = obtaintJsonWebToken.data
 		
+		return JWT
+	
 	def test_AnonymousUser_get(self): #測試未驗證的user使用get method
-		c = Client()
-		response = c.get('/apis/category/1/')
+		response = self.client.get('/apis/category/1/')
 		
 		self.assertEqual(response.status_code , 200)
 		self.assertEqual(response.data , {'id': 1, 'name': 'book'} )
 		
 	def test_AnonymousUser_put(self): #測試未驗證的user使用put method
-		c = Client()
-		response = c.put('/apis/category/1/' , {'name':'monitor'})
+		response = self.client.put('/apis/category/1/' , {'name':'monitor'})
 		
 		self.assertEqual(response.status_code , 401)
 		
 	def test_AnonymousUser_delete(self): #測試未驗證的user使用delete method
-		c = Client()
-		response = c.delete('/apis/category/1/')
+		response = self.client.delete('/apis/category/1/')
 		
 		self.assertEqual(response.status_code , 401)
 		
 	def test_AuthenticatedUser_get(self): #測試已驗證的user使用get method
-		##先獲得JsonWebToken
-		c = Client()
-		obtaintJsonWebToken = c.post('/api/token/' , 
-			{'username':'jacob' , 'password':'top1secret23'} ,
-			content_type='application/json'
-			)
-		JWT = obtaintJsonWebToken.data
+		JWT = self.get_JSON_Web_Token()
 		
 		##建立有Authorization: Bearer + access token的header的Client() instance，完成post method
 		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
@@ -111,13 +111,7 @@ class CategoryDetailTest(TestCase):  #測試CategoryDetail的GET、PUT和DELET�
 		self.assertEqual(response.data , {'id': 1, 'name': 'book'} )
 		
 	def test_AuthenticatedUser_put(self): #測試已驗證的user使用put method
-		##先獲得JsonWebToken
-		c = Client()
-		obtaintJsonWebToken = c.post('/api/token/' , 
-			{'username':'jacob' , 'password':'top1secret23'} , 
-			content_type='application/json'
-			)
-		JWT = obtaintJsonWebToken.data
+		JWT = self.get_JSON_Web_Token()
 		
 		##建立有Authorization: Bearer + access token的header的Client() instance，完成post method
 		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
@@ -127,13 +121,7 @@ class CategoryDetailTest(TestCase):  #測試CategoryDetail的GET、PUT和DELET�
 		self.assertEqual(response.data , {'id': 1, 'name': 'monitor'} )
 		
 	def test_AuthenticatedUser_delete(self): #測試已驗證的user使用delete method
-		##先獲得JsonWebToken
-		c = Client()
-		obtaintJsonWebToken = c.post('/api/token/' , 
-			{'username':'jacob' , 'password':'top1secret23'} , 
-			content_type='application/json'
-			)
-		JWT = obtaintJsonWebToken.data
+		JWT = self.get_JSON_Web_Token()
 		
 		##建立有Authorization: Bearer + access token的header的Client() instance，完成post method
 		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
@@ -172,9 +160,8 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 			)	
 	
 	def get_JSON_Web_Token(self):
-		##獲得JsonWebToken
-		c = Client()
-		obtaintJsonWebToken = c.post('/api/token/' , 
+		##由於POST method需要使用JWT驗證，故建立此method，方便重複使用
+		obtaintJsonWebToken = self.client.post('/api/token/' , 
 			{'username':'jacob' , 'password':'top1secret23'} , 
 			content_type='application/json'
 			)
@@ -182,10 +169,8 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 		
 		return JWT
 	
-	
 	def test_AnonymousUser_get(self): #測試未驗證的user使用get method
-		c = Client()
-		response = c.get('/apis/products/')
+		response = self.client.get('/apis/products/')
 		
 		self.assertEqual(response.status_code , 200)
 		self.assertEqual(response.data , 
@@ -214,10 +199,7 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 		)
 	
 	def test_AnonymousUser_post(self): #測試未驗證的user使用post method
-		c = Client()
-		#guitarcategory = Category.objects.get(name = 'guitar')
-		
-		response = c.post('/apis/products/' , 
+		response = self.client.post('/apis/products/' , 
 			{
 				'category' : 2,
 				'name' : 'Strandberg Boden Original 6',
@@ -231,13 +213,7 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 		self.assertEqual(response.status_code , 401)
 		
 	def test_AuthenticatedUser_post(self): #測試未驗證的user使用post method
-		##先獲得JsonWebToken
-		c = Client()
-		obtaintJsonWebToken = c.post('/api/token/' , 
-			{'username':'jacob' , 'password':'top1secret23'} , 
-			content_type='application/json'
-			)
-		JWT = obtaintJsonWebToken.data
+		JWT = self.get_JSON_Web_Token()
 		
 		##建立有Authorization: Bearer + access token的header的Client() instance，完成post method
 		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
