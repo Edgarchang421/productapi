@@ -1,11 +1,7 @@
 from django.test import TestCase , Client
-from django.contrib.auth.models import AnonymousUser, User
-from django.core.files import File
+from django.contrib.auth.models import User
 
-from .views import CategoryList
 from .models import Category , Product
-
-from io import BytesIO
 
 class CategoriesListTest(TestCase): #測試CategoryList的GET和POST，分為匿名user和已驗證過的user。
 	##建立categoet的資料，方便AssertEqual時重複使用
