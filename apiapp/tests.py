@@ -280,8 +280,9 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 
 class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，分為匿名user和已驗證過的user。
 	def setUp(self):
-		#建立test database，然後新增一個普通user、一個Category的instance、兩個Product的instance
+		#建立test database，然後新增兩個普通user、一個Category的instance、兩個Product的instance
 		self.user = User.objects.create_user(username='jacob',  password='top1secret23')
+		self.user = User.objects.create_user(username='kevin',  password='pass12word23')
 		
 		Category.objects.create(name = 'book')
 		Category.objects.create(name = 'guitar')
@@ -303,6 +304,16 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 		##由於POST、PUT、DELETE method需要使用JWT驗證，故建立此method，方便重複使用
 		obtaintJsonWebToken = self.client.post('/api/token/' , 
 			{'username':'jacob' , 'password':'top1secret23'} , 
+			content_type='application/json'
+			)
+		JWT = obtaintJsonWebToken.data
+		
+		return JWT
+		
+	def get_not_owner_JSON_Web_Token(self):
+		##由於POST、PUT、DELETE method需要使用JWT驗證，故建立此method，方便重複使用
+		obtaintJsonWebToken = self.client.post('/api/token/' , 
+			{'username':'kevin' , 'password':'pass12word23'} , 
 			content_type='application/json'
 			)
 		JWT = obtaintJsonWebToken.data
@@ -408,3 +419,23 @@ class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，�
 		
 		self.assertEqual(response.status_code , 204)
 		self.assertEqual(response.data , None )
+		
+	def test_AuthenticatedUser_but_not_owner_get(self): #測試已驗證的user使用delete method
+		JWT = self.get_not_owner_JSON_Web_Token()
+		
+		c = Client(HTTP_AUTHORIZATION='Bearer ' + JWT['access'])
+		response = c.get('/apis/product/1/')
+		
+		self.assertEqual(response.status_code , 200)
+		self.assertEqual(response.data , 
+			{
+				'id': 1,
+				'category': 1,
+				'name': '科班出身的MVC網頁開發：使用Python+Django',
+				'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
+				'image': None ,
+				'stock': 10,
+				'price': 550,
+				'owner': 'jacob'
+			} 
+		)
