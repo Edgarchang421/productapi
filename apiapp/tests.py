@@ -273,7 +273,42 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 				'owner': 'jacob'
 			}
 		)
-
+	
+	def test_AnonymousUser_get_through_category_filter_arg_use_book(self):
+		response = self.client.get('/apis/products/?category=book')
+		
+		self.assertEqual(response.status_code , 200)
+		self.assertEqual(response.data , 
+			[
+				{
+					'id': 1,
+					'category': 1,
+					'name': '科班出身的MVC網頁開發：使用Python+Django',
+					'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
+					'image': None ,
+					'stock': 10,
+					'price': 550,
+					'owner': 'jacob'
+				},
+				{
+					'id': 2,
+					'category': 1,
+					'name' : 'Python Web介面開發與自動化測試' , 
+					'description' : '本書從Web介面開發講起，理解介面是如何開發後，再學習介面測試自然就變得非常簡單。',
+					'image': None ,
+					'stock': 5,
+					'price': 450,
+					'owner': 'jacob'
+				}
+			]
+		)
+		
+	def test_AnonymousUser_get_through_category_filter_arg_use_guitar(self):
+		response = self.client.get('/apis/products/?category=guitar')
+		
+		self.assertEqual(response.status_code , 200)
+		self.assertEqual(response.data , [])
+	
 class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，分為匿名user和已驗證過的user。
 	def setUp(self):
 		#建立test database，然後新增兩個普通user、一個Category的instance、兩個Product的instance
