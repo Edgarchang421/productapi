@@ -308,6 +308,65 @@ class ProductListTest(TestCase):  #測試ProductList的GET、POST，分為匿名
 		
 		self.assertEqual(response.status_code , 200)
 		self.assertEqual(response.data , [])
+		
+	def test_AnonymousUser_get_through_username_filter(self):
+		response = self.client.get('/apis/products/?username=jacob')
+		
+		self.assertEqual(response.status_code , 200)
+		self.assertEqual(response.data , 
+			[
+				{
+					'id': 1,
+					'category': 1,
+					'name': '科班出身的MVC網頁開發：使用Python+Django',
+					'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
+					'image': None ,
+					'stock': 10,
+					'price': 550,
+					'owner': 'jacob'
+				},
+				{
+					'id': 2,
+					'category': 1,
+					'name' : 'Python Web介面開發與自動化測試' , 
+					'description' : '本書從Web介面開發講起，理解介面是如何開發後，再學習介面測試自然就變得非常簡單。',
+					'image': None ,
+					'stock': 5,
+					'price': 450,
+					'owner': 'jacob'
+				}
+			]
+		)
+		
+	def test_AnonymousUser_get_through_username_and_category_filter(self):
+		response = self.client.get('/apis/products/?username=jacob&category=book')
+		
+		self.assertEqual(response.status_code , 200)
+		self.assertEqual(response.data , 
+			[
+				{
+					'id': 1,
+					'category': 1,
+					'name': '科班出身的MVC網頁開發：使用Python+Django',
+					'description': '書中內容來自於團隊實際專案開發經驗和相關知識按系統撰寫而成。',
+					'image': None ,
+					'stock': 10,
+					'price': 550,
+					'owner': 'jacob'
+				},
+				{
+					'id': 2,
+					'category': 1,
+					'name' : 'Python Web介面開發與自動化測試' , 
+					'description' : '本書從Web介面開發講起，理解介面是如何開發後，再學習介面測試自然就變得非常簡單。',
+					'image': None ,
+					'stock': 5,
+					'price': 450,
+					'owner': 'jacob'
+				}
+			]
+		)
+	
 	
 class ProductDetailTest(TestCase): #測試ProductDetail的GET、PUT和DELET，分為匿名user和已驗證過的user。
 	def setUp(self):
