@@ -11,4 +11,4 @@ urlpatterns = [
 	path('apis/user/<int:pk>/', views.UserDetail.as_view()),
 	]
 
-urlpatterns = format_suffix_patterns(urlpatterns)
+#urlpatterns = format_suffix_patterns(urlpatterns)
