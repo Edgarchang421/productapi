@@ -1,7 +1,7 @@
 # productapi  
 透過django、djangorestframework建立簡易的產品資料API  
 
-##Packages
+## Packages
 pip install django==2.2.12 djangorestframework djangorestframework-simplejwt  
 pip install -U drf-yasg  
 
@@ -10,7 +10,7 @@ pip install -U drf-yasg
 透過djangorestframework-simplejwt使用json web token驗證機制  
 drf-yasg可以迅速建立API文件  
 
-##models  
+## models  
 ```
 from django.db import models
 from django.contrib.auth.models import User
@@ -36,7 +36,7 @@ class Product(models.Model):
 Category儲存產品類別的名稱，Product儲存單一產品的詳細資料  
 Product的category field使用ForeignKey與Category建立關聯  
 
-##serializers  
+## serializers  
 ```
 from .models import Category,Product
 from rest_framework import serializers
@@ -64,7 +64,7 @@ class ProductSerializer(serializers.ModelSerializer):
 迅速建立與model相對應的serializer  
 之後如果考量到效能問題，也可以只使用REST framework的serializers.Serializer  
 
-##views  
+## views  
 只列出ProductList和Productdetail  
 ```
 class ProductList(mixins.ListModelMixin,
@@ -130,7 +130,7 @@ class ProductDetail(mixins.RetrieveModelMixin,
   
 在ProducyLIst透過override get_queryset()提供filter的功能，可以使用username和category作為參數，列出客戶端需求的資料  
 
-##permissions  
+## permissions  
 ```
 from rest_framework.permissions import BasePermission , SAFE_METHODS
 
@@ -155,7 +155,7 @@ IsOwnerOrReadOnly、ReadOnly這兩個permission class是REST framework沒有提�
 Custom permission參考自官方文件  
 https://www.django-rest-framework.org/api-guide/permissions/#custom-permissions  
 
-##apiapp/urls  
+## apiapp/urls  
 ```
 from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
@@ -179,7 +179,7 @@ urlpatterns = format_suffix_patterns(urlpatterns)
 但因為會使得drf-yasg的Validation無法通過，故先註解掉  
 https://drf-yasg.readthedocs.io/en/stable/readme.html#using-swagger-cli  
   
-##tests  
+## tests  
 主要有:  
 class CategoriesListTest(TestCase): #測試CategoryList的GET和POST，分為匿名user和已驗證過的user。  
 class CategoryDetailTest(TestCase):  #測試CategoryDetail的GET、PUT和DELET，分為匿名user和已驗證過的user。  
