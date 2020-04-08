@@ -248,18 +248,21 @@ MEDIA_URL = '/media/'  #可通過http://127.0.0.1/media/***/訪問
 https://docs.djangoproject.com/en/3.0/howto/static-files/  
 
 ## URLconf
+提供client獲取json web token的endpoint所使用的view   
 ```
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 ```
-提供client獲取json web token的endpoint所使用的view   
+  
+提供client獲取json web token的endpoint  
 ```
 	path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
 	path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ```
-提供client獲取json web token的endpoint  
+  
+製作API文件需要取得view的結構   
 ```
 schema_view = get_schema_view(
    openapi.Info(
@@ -274,23 +277,22 @@ schema_view = get_schema_view(
    permission_classes=(permissions.AllowAny,),
 )
 ```
-製作API文件需要取得view的結構  
-
+  
+使用正規表達式的re_path製作API文件的endpoint   
 ```
 re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
 re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ```
-使用正規表達式的re_path製作API文件的endpoint  
-
+  
+讓user可以直接在瀏覽器查看static file   
 ```
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 ```
-讓user可以直接在瀏覽器查看static file  
-
+  
+REST framework所提供的basi auth登入頁面   
 ```
 urlpatterns += [
     path('api-auth/', include('rest_framework.urls')),
 ]
 ```
-REST framework所提供的basi auth登入頁面  
